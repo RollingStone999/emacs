@@ -96,12 +96,6 @@
 (global-set-key (kbd "C-x t") 'yasdcv-translate-at-point)
 ;;; sdcv setting end
 
-;;; sublimity-mode setting begin
-(require 'sublimity)
-(require 'sublimity-scroll)
-(require 'sublimity-map)
-;;; sublimity-mode setting end
-
 ;;; newsticker setting begin
 (setq newsticker-url-list
       '(("Washington Post" "http://feeds.washingtonpost.com/rss/world")
@@ -124,12 +118,12 @@
 ;;; smart-mode-line setting end
 
 ;;; multi-occur setting begin
-(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-(global-set-key (kbd "C->") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c C-a") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-c C->") 'mc/unmark-next-like-this)
-(global-set-key (kbd "C-c C-<") 'mc/unmark-previous-like-this)
+(global-set-key (kbd "C-x c e") 'mc/edit-lines)
+(global-set-key (kbd "C-x c >") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-x c <") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-x c a") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-x c n") 'mc/unmark-next-like-this)
+(global-set-key (kbd "C-x c p") 'mc/unmark-previous-like-this)
 ;;; multi-occur setting end
 
 ;;; yasnippet setting begin
@@ -147,7 +141,8 @@
 ;;; ruby seting end
 
 ;;; for macosx c-space setting begin
-(global-set-key (kbd "C-.") 'set-mark-command)
+(global-unset-key (kbd "C-m"))
+(global-set-key (kbd "C-m") 'set-mark-command)
 ;;; for macosx c-space setting end
 
 ;;; for macosx dash setting begin
