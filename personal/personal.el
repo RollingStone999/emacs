@@ -118,12 +118,12 @@
 ;;; smart-mode-line setting end
 
 ;;; multi-occur setting begin
-(global-set-key (kbd "C-x c e") 'mc/edit-lines)
-(global-set-key (kbd "C-x c >") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-x c <") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-x c a") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-x c n") 'mc/unmark-next-like-this)
-(global-set-key (kbd "C-x c p") 'mc/unmark-previous-like-this)
+(global-set-key (kbd "C-c c e") 'mc/edit-lines)
+(global-set-key (kbd "C-c c >") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-c c <") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c c a") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-c c n") 'mc/unmark-next-like-this)
+(global-set-key (kbd "C-c c p") 'mc/unmark-previous-like-this)
 ;;; multi-occur setting end
 
 ;;; yasnippet setting begin
@@ -141,8 +141,8 @@
 ;;; ruby seting end
 
 ;;; for macosx c-space setting begin
-(global-unset-key (kbd "C-m"))
-(global-set-key (kbd "C-m") 'set-mark-command)
+(global-unset-key (kbd "C-x m"))
+(global-set-key (kbd "C-x m") 'set-mark-command)
 ;;; for macosx c-space setting end
 
 ;;; for macosx dash setting begin
@@ -150,6 +150,13 @@
 (global-set-key (kbd "C-c h d") 'dash-at-point)
 (global-set-key (kbd "C-c h s") 'dash-at-point-with-docset)
 ;;; for macosx dash setting end
+
+;;; frame zoom function setting begin
+(global-unset-key (kbd "C-x C-+"))
+(global-unset-key (kbd "C-x C--"))
+(global-set-key (kbd "C-x C-+") 'zoom-frm-in)
+(global-set-key (kbd "C-x C--") 'zoom-frm-out)
+;;; frame zoom function setting begin
 
 (provide 'personal)
 ;;; personal.el ends here
