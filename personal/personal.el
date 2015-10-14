@@ -140,11 +140,6 @@
 (add-hook 'projectile-mode-hook 'projectile-rails-on)
 ;;; ruby seting end
 
-;;; for macosx c-space setting begin
-(global-unset-key (kbd "C-x m"))
-(global-set-key (kbd "C-x m") 'set-mark-command)
-;;; for macosx c-space setting end
-
 ;;; for macosx dash setting begin
 (global-unset-key (kbd "C-c h s"))
 (global-set-key (kbd "C-c h d") 'dash-at-point)
