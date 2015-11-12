@@ -8,7 +8,6 @@
 ;;; Code:
 
 ;;; cscope setting begin
-(require 'xcscope)
 (add-hook 'c-mode-common-hook 'cscope-minor-mode)
 ;;(define-key global-map [(control f3)]  'cscope-set-initial-directory)
 ;;(define-key global-map [(control f4)]  'cscope-unset-initial-directory)
@@ -71,7 +70,7 @@
 ;;; c-mode setting end
 
 ;;; tab setting begin
-(setq-default indent-tabs-mode nil)
+;;(setq-default indent-tabs-mode nil)
 (setq default-tab-width 8)
 ;;; tab setting end
 
