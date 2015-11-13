@@ -150,7 +150,14 @@
 (global-unset-key (kbd "C-x C--"))
 (global-set-key (kbd "C-x C-+") 'zoom-frm-in)
 (global-set-key (kbd "C-x C--") 'zoom-frm-out)
-;;; frame zoom function setting begin
+;;; frame zoom function setting end
+
+
+;;; helm setting begin
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ;rebind tab to do persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ;make TAB works in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ;list actions using C-z
+;;; helm setting end
 
 (provide 'personal)
 ;;; personal.el ends here
