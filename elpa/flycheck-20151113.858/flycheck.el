@@ -229,6 +229,7 @@ attention to case differences."
     ruby-rubylint
     ruby
     ruby-jruby
+    rust-cargo
     rust
     sass
     scala
@@ -1380,7 +1381,7 @@ a default on its own."
       (setq input default))
     (let ((checker (intern input)))
       (unless (flycheck-valid-checker-p checker)
-        (error "%S is no Flycheck syntax checker" checker))
+        (error "%S is not a valid Flycheck syntax checker" checker))
       checker)))
 
 (defun read-flycheck-error-level (prompt)
@@ -1790,11 +1791,10 @@ nil otherwise."
 (defun flycheck-checker-at-point ()
   "Return the Flycheck checker found at or before point.
 
-Return 0 if there is no checker."
+Return nil if there is no checker."
   (let ((symbol (variable-at-point 'any-symbol)))
-    (if (and (symbolp symbol) (flycheck-valid-checker-p symbol))
-        symbol
-      0)))
+    (when (flycheck-valid-checker-p symbol)
+      symbol)))
 
 (defun flycheck-describe-checker (checker)
   "Display the documentation of CHECKER.
@@ -1803,78 +1803,78 @@ CHECKER is a checker symbol.
 
 Pop up a help buffer with the documentation of CHECKER."
   (interactive
-   (let* ((checker (flycheck-checker-at-point))
-          (enable-recursive-minibuffers t)
-          (prompt (if (symbolp checker)
-                      (format "Describe syntax checker (default %s): " checker)
-                    "Describe syntax checker: "))
-          (reply (read-flycheck-checker prompt)))
-     (list (or reply checker))))
-  (if (or (null checker) (not (flycheck-valid-checker-p checker)))
-      (message "You didn't specify a Flycheck syntax checker.")
-    (help-setup-xref (list #'flycheck-describe-checker checker)
-                     (called-interactively-p 'interactive))
-    (save-excursion
-      (with-help-window (help-buffer)
-        (let ((filename (flycheck-checker-get checker 'file))
-              (modes (flycheck-checker-get checker 'modes))
-              (predicate (flycheck-checker-get checker 'predicate))
-              (print-doc (flycheck-checker-get checker 'print-doc))
-              (next-checkers (flycheck-checker-get checker 'next-checkers)))
-          (princ (format "%s is a Flycheck syntax checker" checker))
-          (when filename
-            (princ (format " in `%s'" (file-name-nondirectory filename)))
-            (with-current-buffer standard-output
-              (save-excursion
-                (re-search-backward "`\\([^`']+\\)'" nil t)
-                (help-xref-button 1 'help-flycheck-checker-def checker filename))))
-          (princ ".\n\n")
+   (let* ((enable-recursive-minibuffers t)
+          (default (or (flycheck-checker-at-point)
+                       (ignore-errors (flycheck-get-checker-for-buffer))))
+          (prompt (if default
+                      (format "Describe syntax checker (default %s): " default)
+                    "Describe syntax checker: ")))
+     (list (read-flycheck-checker prompt default))))
+  (unless (flycheck-valid-checker-p checker)
+    (user-error "You didn't specify a Flycheck syntax checker"))
+  (help-setup-xref (list #'flycheck-describe-checker checker)
+                   (called-interactively-p 'interactive))
+  (save-excursion
+    (with-help-window (help-buffer)
+      (let ((filename (flycheck-checker-get checker 'file))
+            (modes (flycheck-checker-get checker 'modes))
+            (predicate (flycheck-checker-get checker 'predicate))
+            (print-doc (flycheck-checker-get checker 'print-doc))
+            (next-checkers (flycheck-checker-get checker 'next-checkers)))
+        (princ (format "%s is a Flycheck syntax checker" checker))
+        (when filename
+          (princ (format " in `%s'" (file-name-nondirectory filename)))
+          (with-current-buffer standard-output
+            (save-excursion
+              (re-search-backward "`\\([^`']+\\)'" nil t)
+              (help-xref-button 1 'help-flycheck-checker-def checker filename))))
+        (princ ".\n\n")
 
-          (let ((modes-start (with-current-buffer standard-output (point-max))))
-            ;; Track the start of the modes documentation, to properly re-fill
-            ;; it later
-            (if (not modes)
-                ;; Syntax checkers without modes must have a predicate
-                (princ "  This syntax checker checks syntax if a custom predicate holds")
-              (princ "  This syntax checker checks syntax in the major mode(s) ")
-              (princ (string-join
-                      (mapcar (apply-partially #'format "`%s'") modes)
-                      ", "))
-              (when predicate
-                (princ ", and uses a custom predicate")))
-            (princ ".")
-            (when next-checkers
-              (princ "  It runs the following checkers afterwards:"))
-            (with-current-buffer standard-output
-              (save-excursion
-                (fill-region-as-paragraph modes-start (point-max))))
+        (let ((modes-start (with-current-buffer standard-output (point-max))))
+          ;; Track the start of the modes documentation, to properly re-fill
+          ;; it later
+          (if (not modes)
+              ;; Syntax checkers without modes must have a predicate
+              (princ "  This syntax checker checks syntax if a custom predicate holds")
+            (princ "  This syntax checker checks syntax in the major mode(s) ")
+            (princ (string-join
+                    (mapcar (apply-partially #'format "`%s'") modes)
+                    ", "))
+            (when predicate
+              (princ ", and uses a custom predicate")))
+          (princ ".")
+          (when next-checkers
+            (princ "  It runs the following checkers afterwards:"))
+          (with-current-buffer standard-output
+            (save-excursion
+              (fill-region-as-paragraph modes-start (point-max))))
+          (princ "\n")
+
+          ;; Print the list of next checkers
+          (when next-checkers
             (princ "\n")
-
-            ;; Print the list of next checkers
-            (when next-checkers
-              (princ "\n")
-              (let ((beg-checker-list (with-current-buffer standard-output
-                                        (point))))
-                (dolist (next-checker next-checkers)
-                  (if (symbolp next-checker)
-                      (princ (format "     * `%s'\n" next-checker))
-                    (princ (format "     * `%s' (maximum level `%s')\n"
-                                   (cdr next-checker) (car next-checker)))))
-                ;;
-                (with-current-buffer standard-output
-                  (save-excursion
-                    (while (re-search-backward "`\\([^`']+\\)'"
-                                               beg-checker-list t)
-                      (when (flycheck-valid-checker-p
-                             (intern-soft (match-string 1)))
-                        (help-xref-button 1 'help-flycheck-checker-def checker
-                                          filename))))))))
-          ;; Call the custom print-doc function of the checker, if present
-          (when print-doc
-            (funcall print-doc checker))
-          ;; Ultimately, print the docstring
-          (princ "\nDocumentation:\n")
-          (princ (flycheck-checker-get checker 'documentation)))))))
+            (let ((beg-checker-list (with-current-buffer standard-output
+                                      (point))))
+              (dolist (next-checker next-checkers)
+                (if (symbolp next-checker)
+                    (princ (format "     * `%s'\n" next-checker))
+                  (princ (format "     * `%s' (maximum level `%s')\n"
+                                 (cdr next-checker) (car next-checker)))))
+              ;;
+              (with-current-buffer standard-output
+                (save-excursion
+                  (while (re-search-backward "`\\([^`']+\\)'"
+                                             beg-checker-list t)
+                    (when (flycheck-valid-checker-p
+                           (intern-soft (match-string 1)))
+                      (help-xref-button 1 'help-flycheck-checker-def checker
+                                        filename))))))))
+        ;; Call the custom print-doc function of the checker, if present
+        (when print-doc
+          (funcall print-doc checker))
+        ;; Ultimately, print the docstring
+        (princ "\nDocumentation:\n")
+        (princ (flycheck-checker-get checker 'documentation))))))
 
 
 ;;; Syntax checker verification
@@ -2152,24 +2152,32 @@ Slots:
 (defconst flycheck-hooks-alist
   '(
     ;; Handle events that may start automatic syntax checks
-    (after-save-hook                  . flycheck-handle-save)
-    (after-change-functions           . flycheck-handle-change)
+    (after-save-hook        . flycheck-handle-save)
+    (after-change-functions . flycheck-handle-change)
     ;; Handle events that may triggered pending deferred checks
     (window-configuration-change-hook . flycheck-perform-deferred-syntax-check)
     (post-command-hook                . flycheck-perform-deferred-syntax-check)
     ;; Teardown Flycheck whenever the buffer state is about to get lost, to
     ;; clean up temporary files and directories.
-    (kill-buffer-hook                 . flycheck-teardown)
-    (change-major-mode-hook           . flycheck-teardown)
-    (before-revert-hook               . flycheck-teardown)
+    (kill-buffer-hook       . flycheck-teardown)
+    (change-major-mode-hook . flycheck-teardown)
+    (before-revert-hook     . flycheck-teardown)
     ;; Update the error list if necessary
-    (post-command-hook                . flycheck-error-list-update-source)
-    (post-command-hook                . flycheck-error-list-highlight-errors)
-    ;; Show or hide error popups after commands
-    (post-command-hook                . flycheck-display-error-at-point-soon)
-    (post-command-hook                . flycheck-hide-error-buffer)
+    (post-command-hook . flycheck-error-list-update-source)
+    (post-command-hook . flycheck-error-list-highlight-errors)
+    ;; Display errors.  Show errors at point after commands (like movements) and
+    ;; when Emacs gets focus.  Cancel the display timer when Emacs looses focus
+    ;; (as there's no need to display errors if the user can't see them), and
+    ;; hide the error buffer (for large error messages) if necessary.  Note that
+    ;; the focus hooks only work on Emacs 24.4 and upwards, but since undefined
+    ;; hooks are perfectly ok we don't need a version guard here.  They'll just
+    ;; not work silently.
+    (post-command-hook . flycheck-display-error-at-point-soon)
+    (focus-in-hook     . flycheck-display-error-at-point-soon)
+    (focus-out-hook    . flycheck-cancel-error-display-error-at-point-timer)
+    (post-command-hook . flycheck-hide-error-buffer)
     ;; Immediately show error popups when navigating to an error
-    (next-error-hook                  . flycheck-display-error-at-point))
+    (next-error-hook . flycheck-display-error-at-point))
   "Hooks which Flycheck needs to hook in.
 
 The `car' of each pair is a hook variable, the `cdr' a function
@@ -4797,6 +4805,15 @@ variable symbol for a syntax checker."
 
 
 ;;; Configuration files and options for command checkers
+(defun flycheck-register-config-file-var (var checkers)
+  "Register VAR as config file var for CHECKERS.
+
+CHECKERS is a single syntax checker or a list thereof."
+  (when (symbolp checkers)
+    (setq checkers (list checkers)))
+  (dolist (checker checkers)
+    (setf (flycheck-checker-get checker 'config-file-var) var)))
+
 ;;;###autoload
 (defmacro flycheck-def-config-file-var (symbol checker &optional file-name
                                                &rest custom-args)
@@ -4811,9 +4828,10 @@ the default value is nil.
 
 Use this together with the `config-file' form in the `:command'
 argument to `flycheck-define-checker'."
+  ;; FIXME: We should allow multiple config files per checker as well as
+  ;; multiple checkers per config file
   (declare (indent 3))
   `(progn
-     (put ',checker 'flycheck-config-file-var ',symbol)
      (defcustom ,symbol ,file-name
        ,(format "Configuration file for `%s'.
 
@@ -4830,7 +4848,8 @@ configuration file a buffer." checker)
        :type '(choice (const :tag "No configuration file" nil)
                       (string :tag "File name or path"))
        :group 'flycheck-config-files
-       ,@custom-args)))
+       ,@custom-args)
+     (flycheck-register-config-file-var ',symbol ',checker)))
 
 (defun flycheck-locate-config-file (filename checker)
   "Locate the configuration file FILENAME for CHECKER.
@@ -4887,15 +4906,27 @@ directory, or nil otherwise."
         flycheck-locate-config-file-ancestor-directories
         flycheck-locate-config-file-home))
 
+(defun flycheck-register-option-var (var checkers)
+  "Register an option VAR with CHECKERS.
+
+VAR is an option symbol, and CHECKERS a syntax checker symbol or
+a list thereof.  Register VAR with all CHECKERS so that it
+appears in the help output."
+  (when (symbolp checkers)
+    (setq checkers (list checkers)))
+  (dolist (checker checkers)
+    (cl-pushnew var (flycheck-checker-get checker 'option-vars))))
+
 ;;;###autoload
-(defmacro flycheck-def-option-var (symbol init-value checker docstring
+(defmacro flycheck-def-option-var (symbol init-value checkers docstring
                                           &rest custom-args)
   "Define SYMBOL as option variable with INIT-VALUE for CHECKER.
 
 SYMBOL is declared as customizable variable using `defcustom', to
-provide an option for the given syntax CHECKER.  INIT-VALUE is
-the initial value of the variable, and DOCSTRING is its
-docstring.  CUSTOM-ARGS are forwarded to `defcustom'.
+provide an option for the given syntax CHECKERS (a checker or a
+list of checkers).  INIT-VALUE is the initial value of the
+variable, and DOCSTRING is its docstring.  CUSTOM-ARGS are
+forwarded to `defcustom'.
 
 Use this together with the `option', `option-list' and
 `option-flag' forms in the `:command' argument to
@@ -4903,15 +4934,18 @@ Use this together with the `option', `option-list' and
   (declare (indent 3)
            (doc-string 4))
   `(progn
-     (let ((options (flycheck-checker-get ',checker 'option-vars)))
-       (unless (memq ',symbol options)
-         (put ',checker 'flycheck-option-vars (cons ',symbol options))))
      (defcustom ,symbol ,init-value
-       ,(format "%s
+       ,(concat docstring "
 
-This variable is an option for the syntax checker `%s'." docstring checker)
+This variable is an option for the following syntax checkers:
+
+"
+                (mapconcat (lambda (c) (format "  - `%s'" c))
+                           (if (symbolp checkers) (list checkers) checkers)
+                           "\n"))
        :group 'flycheck-options
-       ,@custom-args)))
+       ,@custom-args)
+     (flycheck-register-option-var ',symbol ',checkers)))
 
 (defun flycheck-option-int (value)
   "Convert an integral option VALUE to a string.
@@ -4941,22 +4975,22 @@ SEPARATOR is ignored in this case."
           (string-join value separator))
       (funcall filter value))))
 
-(defmacro flycheck-def-args-var (symbol checker &rest custom-args)
-  "Define SYMBOL as argument variable for CHECKER.
+(defmacro flycheck-def-args-var (symbol checkers &rest custom-args)
+  "Define SYMBOL as argument variable for CHECKERS.
 
 SYMBOL is declared as customizable, risky and buffer-local
 variable using `defcustom' to provide an option for arbitrary
-arguments for the given syntax CHECKER.  CUSTOM-ARGS is forwarded
-to `defcustom'.
+arguments for the given syntax CHECKERS (either a single checker
+or a list of checkers).  CUSTOM-ARGS is forwarded to `defcustom'.
 
 Use the `eval' form to splice this variable into the
 `:command'."
   (declare (indent 2))
-  `(flycheck-def-option-var ,symbol nil ,checker
-     ,(format "A list of additional arguments for `%s'.
+  `(flycheck-def-option-var ,symbol nil ,checkers
+     "A list of additional command line arguments.
 
 The value of this variable is a list of strings with additional
-command line arguments." checker)
+command line arguments."
      :risky t
      :type '(repeat (string :tag "Argument"))
      ,@custom-args))
@@ -6602,7 +6636,7 @@ See URL `http://handlebarsjs.com/'."
       (group (one-or-more (not (any space "\n")))))
   "Regular expression for a Haskell module name.")
 
-(flycheck-def-args-var flycheck-ghc-args haskell-ghc
+(flycheck-def-args-var flycheck-ghc-args (haskell-stack-ghc haskell-ghc)
   :package-version '(flycheck . "0.22"))
 
 (flycheck-def-option-var flycheck-ghc-no-user-package-database nil haskell-ghc
@@ -6624,7 +6658,8 @@ database is given to GHC via `-package-db'."
   :safe #'flycheck-string-list-p
   :package-version '(flycheck . "0.16"))
 
-(flycheck-def-option-var flycheck-ghc-search-path nil haskell-ghc
+(flycheck-def-option-var flycheck-ghc-search-path nil
+                         (haskell-stack-ghc haskell-ghc)
   "Module search path for GHC.
 
 The value of this variable is a list of strings, where each
@@ -6634,7 +6669,8 @@ is added to the GHC search path via `-i'."
   :safe #'flycheck-string-list-p
   :package-version '(flycheck . "0.16"))
 
-(flycheck-def-option-var flycheck-ghc-language-extensions nil haskell-ghc
+(flycheck-def-option-var flycheck-ghc-language-extensions nil
+                         (haskell-stack-ghc haskell-ghc)
   "Language extensions for GHC and Stack.
 
 The value of this variable is a list of strings, where each
@@ -7644,10 +7680,10 @@ See URL `http://jruby.org/'."
   :modes (enh-ruby-mode ruby-mode)
   :next-checkers ((warning . ruby-rubylint)))
 
-(flycheck-def-args-var flycheck-rust-args rust
+(flycheck-def-args-var flycheck-rust-args (rust-cargo rust)
   :package-version '(flycheck . "0.24"))
 
-(flycheck-def-option-var flycheck-rust-check-tests t rust
+(flycheck-def-option-var flycheck-rust-check-tests t (rust-cargo rust)
   "Whether to check test code in Rust.
 
 When non-nil, `rustc' is passed the `--test' flag, which will
@@ -7674,7 +7710,7 @@ if it is not modified, i.e. after it has been saved."
   :safe #'stringp)
 (make-variable-buffer-local 'flycheck-rust-crate-root)
 
-(flycheck-def-option-var flycheck-rust-crate-type "lib" rust
+(flycheck-def-option-var flycheck-rust-crate-type "lib" (rust-cargo rust)
   "The type of the Rust Crate to check.
 
 The value of this variable is a string denoting the crate type,
@@ -7684,7 +7720,7 @@ for the `--crate-type' flag."
   :package-version '("flycheck" . "0.20"))
 (make-variable-buffer-local 'flycheck-rust-crate-type)
 
-(flycheck-def-option-var flycheck-rust-library-path nil rust
+(flycheck-def-option-var flycheck-rust-library-path nil (rust-cargo rust)
   "A list of library directories for Rust.
 
 The value of this variable is a list of strings, where each
@@ -7693,6 +7729,39 @@ Relative paths are relative to the file being checked."
   :type '(repeat (directory :tag "Library directory"))
   :safe #'flycheck-string-list-p
   :package-version '(flycheck . "0.18"))
+
+(flycheck-define-checker rust-cargo
+  "A Rust syntax checker using Cargo.
+
+This syntax checker needs Cargo with rustc subcommand."
+  :command ("cargo" "rustc"
+            (eval (if (string= flycheck-rust-crate-type "lib") "--lib" nil))
+            "--" "-Z" "no-trans"
+            (option-flag "--test" flycheck-rust-check-tests)
+            (option-list "-L" flycheck-rust-library-path concat)
+            (eval flycheck-rust-args))
+  :error-patterns
+  ((error line-start (file-name) ":" line ":" column ": "
+          (one-or-more digit) ":" (one-or-more digit) " error: "
+          (or
+           ;; Multiline errors
+           (and (message (minimal-match (one-or-more anything)))
+                " [" (id "E" (one-or-more digit)) "]")
+           (message))
+          line-end)
+   (warning line-start (file-name) ":" line ":" column ": "
+            (one-or-more digit) ":" (one-or-more digit) " warning: "
+            (message) line-end)
+   (info line-start (file-name) ":" line ":" column ": "
+         (one-or-more digit) ":" (one-or-more digit) " " (or "note" "help") ": "
+         (message) line-end))
+  :modes rust-mode
+  :predicate (lambda ()
+               ;; Since we build the entire project with cargo rustc we require
+               ;; that the buffer is saved.  And of course, we also need a Cargo
+               ;; file :)
+               (and (flycheck-buffer-saved-p)
+                    (locate-dominating-file (buffer-file-name) "Cargo.toml"))))
 
 (flycheck-define-checker rust
   "A Rust syntax checker using Rust compiler.

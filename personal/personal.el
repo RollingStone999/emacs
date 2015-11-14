@@ -8,13 +8,14 @@
 ;;; Code:
 
 ;;; cscope setting begin
-(add-hook 'c-mode-common-hook 'cscope-minor-mode)
+;;(add-hook 'c-mode-common-hook 'cscope-minor-mode)
+(add-hook 'c-mode-common-hook 'helm-cscope-mode)
 ;;(define-key global-map [(control f3)]  'cscope-set-initial-directory)
 ;;(define-key global-map [(control f4)]  'cscope-unset-initial-directory)
-(define-key global-map (kbd "C-c c s")  'cscope-find-this-symbol)
-(define-key global-map (kbd "C-c c g")  'cscope-find-global-definition)
-(define-key global-map (kbd "C-c c C")  'cscope-find-called-functions)
-(define-key global-map (kbd "C-c c c")  'cscope-find-functions-calling-this-function)
+(define-key global-map (kbd "C-c c s")  'helm-cscope-find-this-symbol)
+(define-key global-map (kbd "C-c c g")  'helm-cscope-find-global-definition)
+(define-key global-map (kbd "C-c c C")  'helm-cscope-find-called-functions)
+(define-key global-map (kbd "C-c c c")  'helm-cscope-find-functions-calling-this-function)
 ;;; cscope setting end
 
 ;;; erc-mode setting begin
@@ -151,7 +152,6 @@
 (global-set-key (kbd "C-x C-+") 'zoom-frm-in)
 (global-set-key (kbd "C-x C--") 'zoom-frm-out)
 ;;; frame zoom function setting end
-
 
 ;;; helm setting begin
 (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ;rebind tab to do persistent action
