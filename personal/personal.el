@@ -159,5 +159,10 @@
 (define-key helm-map (kbd "C-z")  'helm-select-action) ;list actions using C-z
 ;;; helm setting end
 
+;;; theme setting begin
+(disable-theme 'zenburn)
+(setq prelude-theme 'solarized-light)
+;;; theme setting end
+
 (provide 'personal)
 ;;; personal.el ends here
