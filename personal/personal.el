@@ -161,7 +161,7 @@
 
 ;;; theme setting begin
 (disable-theme 'zenburn)
-(setq prelude-theme 'solarized-light)
+(load-theme 'solarized-light)
 ;;; theme setting end
 
 (provide 'personal)
