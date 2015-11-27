@@ -127,7 +127,6 @@
 ;;; multi-occur setting end
 
 ;;; yasnippet setting begin
-(require 'yasnippet)
 (yas-global-mode 1)
 ;;; yasnippet setting end
 
@@ -163,6 +162,11 @@
 (disable-theme 'zenburn)
 (load-theme 'solarized-light)
 ;;; theme setting end
+
+;;; whcih key setting begin
+(which-key-mode 1)
+(which-key-setup-side-window-right)
+;;; whcih key setting end
 
 (provide 'personal)
 ;;; personal.el ends here
