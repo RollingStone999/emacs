@@ -117,14 +117,28 @@
 (sml/setup)
 ;;; smart-mode-line setting end
 
-;;; multi-occur setting begin
+;;; multiple-cursors setting begin
 (global-set-key (kbd "C-c c e") 'mc/edit-lines)
-(global-set-key (kbd "C-c c >") 'mc/mark-next-like-this)
-(global-set-key (kbd "C-c c <") 'mc/mark-previous-like-this)
-(global-set-key (kbd "C-c c a") 'mc/mark-all-like-this)
-(global-set-key (kbd "C-c c n") 'mc/unmark-next-like-this)
-(global-set-key (kbd "C-c c p") 'mc/unmark-previous-like-this)
-;;; multi-occur setting end
+
+(global-set-key (kbd "C-c c > a") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-c c > w") 'mc/mark-next-word-like-this)
+(global-set-key (kbd "C-c c > s") 'mc/mark-next-symbol-like-this)
+(global-set-key (kbd "C-c c < a") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c c < w") 'mc/mark-previous-word-like-this)
+(global-set-key (kbd "C-c c < s") 'mc/mark-previous-symbol-like-this)
+
+(global-set-key (kbd "C-c c m a") 'mc/mark-all-like-this)
+(global-set-key (kbd "C-c c m w") 'mc/mark-all-words-like-this)
+(global-set-key (kbd "C-c c m s") 'mc/mark-all-symbols-like-this)
+(global-set-key (kbd "C-c c m t") 'mc/mark-all-dwim) ;t means try
+
+(global-set-key (kbd "C-c c m d a") 'mc/mark-all-like-this-in-defun)
+(global-set-key (kbd "C-c c m d w") 'mc/mark-all-words-like-this-in-defun)
+(global-set-key (kbd "C-c c m d s") 'mc/mark-all-symbols-like-this-in-defun)
+
+(global-set-key (kbd "C-c c u n") 'mc/unmark-next-like-this)
+(global-set-key (kbd "C-c c u p") 'mc/unmark-previous-like-this)
+;;; multiple-cursors setting end
 
 ;;; yasnippet setting begin
 (yas-global-mode 1)
@@ -167,6 +181,10 @@
 (which-key-mode 1)
 (which-key-setup-side-window-right)
 ;;; whcih key setting end
+
+;;; fancy-narrow-mode setting begin
+(fancy-narrow-mode 1)
+;;; fancy-narrow-mode setting end
 
 (provide 'personal)
 ;;; personal.el ends here
