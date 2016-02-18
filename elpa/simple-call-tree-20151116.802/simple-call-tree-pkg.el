@@ -1,1 +1,0 @@
-(define-package "simple-call-tree" "20151116.802" "analyze source code based on font-lock text-properties" 'nil :url "http://www.emacswiki.org/emacs/download/simple-call-tree.el" :keywords '("programming"))
