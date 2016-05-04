@@ -93,7 +93,7 @@
 
 ;;; sdcv setting begin
 ;; rely on external tool sdcv
-(global-set-key (kbd "C-x t") 'yasdcv-translate-at-point)
+;;(global-set-key (kbd "C-x t") 'yasdcv-translate-at-point)
 ;;; sdcv setting end
 
 ;;; newsticker setting begin
