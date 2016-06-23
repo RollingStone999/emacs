@@ -14,8 +14,8 @@
 ;;(define-key global-map [(control f4)]  'cscope-unset-initial-directory)
 (define-key global-map (kbd "C-c c s")  'helm-cscope-find-this-symbol)
 (define-key global-map (kbd "C-c c g")  'helm-cscope-find-global-definition)
-(define-key global-map (kbd "C-c c C")  'helm-cscope-find-called-functions)
-(define-key global-map (kbd "C-c c c")  'helm-cscope-find-functions-calling-this-function)
+(define-key global-map (kbd "C-c c C")  'helm-cscope-find-called-function)
+(define-key global-map (kbd "C-c c c")  'helm-cscope-find-calling-this-funtcion) ;; funtcion != function the bug of spelling
 ;;; cscope setting end
 
 ;;; erc-mode setting begin
