@@ -175,6 +175,7 @@
 ;;; theme setting begin
 (disable-theme 'zenburn)
 (load-theme 'solarized-light)
+;;(load-theme 'base16-greenscreen-dark)
 ;;; theme setting end
 
 ;;; whcih key setting begin
