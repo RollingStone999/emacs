@@ -190,8 +190,8 @@
 ;;;ycmd setting begin
 (require 'ycmd)
 (add-hook 'after-init-hook #'global-ycmd-mode)
-(set-variable 'ycmd-server-command '("python" "/Users/shenxuhui/.emacs.d/personal/preload/ycmd/ycmd"))
-
+(set-variable 'ycmd-server-command '("python" "/Users/shenxuhui/.emacs.d/personal/preload/ycmd/ycmd")) ;must absolute path
+(set-variable 'ycmd-global-config "/Users/shenxuhui/.emacs.d/personal/preload/ycmd/ycmd/global_config.py")
 (require 'company-ycmd)
 (company-ycmd-setup)
 ;;(require 'flycheck-ycmd)
