@@ -187,5 +187,16 @@
 (fancy-narrow-mode 1)
 ;;; fancy-narrow-mode setting end
 
+;;;ycmd setting begin
+(require 'ycmd)
+(add-hook 'after-init-hook #'global-ycmd-mode)
+(set-variable 'ycmd-server-command '("python" "/Users/shenxuhui/.emacs.d/personal/preload/ycmd/ycmd"))
+
+(require 'company-ycmd)
+(company-ycmd-setup)
+;;(require 'flycheck-ycmd)
+;;(flycheck-ycmd-setup)
+;;;ycmd setting end
+
 (provide 'personal)
 ;;; personal.el ends here
