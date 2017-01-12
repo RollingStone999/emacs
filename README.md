@@ -1,2 +1,2 @@
-# emacs
+# prelude-personal
 My prelude emacs setting.
