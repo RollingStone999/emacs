@@ -1,1 +1,0 @@
-read:errno=60
